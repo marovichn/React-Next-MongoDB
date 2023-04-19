@@ -12,6 +12,23 @@ const MeetupDetailsPage = (props) => {
     ></MeetupDetail>
   );
 };
+export async function getStaticPaths() {
+  const client = await MongoClient.connect(
+    "mongodb+srv://marovichn:<Password>@nikola.wojtt5i.mongodb.net/meetups?retryWrites=true&w=majority"
+  );
+  const db = client.db();
+  const meetupsCollection = db.collection("meetups");
+  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+  client.close();
+
+  return {
+    paths: meetups.map((meetup) => {
+      return { params: { meetupId: meetup._id.toString() } };
+    }),
+    fallback: false,
+  };
+}
 
 export async function getStaticProps(context) {
   const { params } = context;
