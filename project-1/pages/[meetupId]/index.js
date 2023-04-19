@@ -13,4 +13,26 @@ const MeetupDetailsPage = (props) => {
   );
 };
 
+export async function getStaticProps(context) {
+  const { params } = context;
+  const meetupId = params.meetupId;
+
+  const client = await MongoClient.connect(
+    "mongodb+srv://marovichn:<Password>@nikola.wojtt5i.mongodb.net/meetups?retryWrites=true&w=majority"
+  );
+  const db = client.db();
+  const meetupsCollection = db.collection("meetups");
+  const selectedMeetup = await meetupsCollection.findOne({
+    _id: ObjectId(meetupId),
+  });
+
+  client.close();
+
+  return {
+    props: {
+      meetupData: { ...selectedMeetup, _id: selectedMeetup._id.toString() },
+    },
+  };
+}
+
 export default MeetupDetailsPage;
