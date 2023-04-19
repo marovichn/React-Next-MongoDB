@@ -1,20 +1,30 @@
 import { MongoClient, ObjectId } from "mongodb";
+import Head from "next/head";
 
 import MeetupDetail from "@/components/meetups/MeetupDetail";
+import { auth } from "../auth/auth-mongoDB";
 const MeetupDetailsPage = (props) => {
   return (
-    <MeetupDetail
-      id={props.meetupData._id}
-      title={props.meetupData.title}
-      image={props.meetupData.image}
-      address={props.meetupData.address}
-      description={props.meetupData.description}
-    ></MeetupDetail>
+    <>
+      <Head>
+        <title>Details about "{props.meetupData.title}" meeting</title>
+        <meta name="description" content={props.meetupData.description}></meta>
+      </Head>
+      <MeetupDetail
+        id={props.meetupData._id}
+        title={props.meetupData.title}
+        image={props.meetupData.image}
+        address={props.meetupData.address}
+        description={props.meetupData.description}
+      ></MeetupDetail>
+    </>
   );
 };
 export async function getStaticPaths() {
   const client = await MongoClient.connect(
-    "mongodb+srv://marovichn:<Password>@nikola.wojtt5i.mongodb.net/meetups?retryWrites=true&w=majority"
+    "mongodb+srv://marovichn:" +
+      auth.password +
+      "@nikola.wojtt5i.mongodb.net/meetups?retryWrites=true&w=majority"
   );
   const db = client.db();
   const meetupsCollection = db.collection("meetups");
@@ -35,12 +45,14 @@ export async function getStaticProps(context) {
   const meetupId = params.meetupId;
 
   const client = await MongoClient.connect(
-    "mongodb+srv://marovichn:<Password>@nikola.wojtt5i.mongodb.net/meetups?retryWrites=true&w=majority"
+    "mongodb+srv://marovichn:" +
+      auth.password +
+      "@nikola.wojtt5i.mongodb.net/meetups?retryWrites=true&w=majority"
   );
   const db = client.db();
   const meetupsCollection = db.collection("meetups");
   const selectedMeetup = await meetupsCollection.findOne({
-    _id: ObjectId(meetupId),
+    _id: new ObjectId(meetupId),
   });
 
   client.close();
@@ -49,6 +61,7 @@ export async function getStaticProps(context) {
     props: {
       meetupData: { ...selectedMeetup, _id: selectedMeetup._id.toString() },
     },
+    revalidate: 360,
   };
 }
 

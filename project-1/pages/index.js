@@ -1,13 +1,28 @@
 import MeetupList from "@/components/meetups/MeetupList";
 import { MongoClient } from "mongodb";
+import { auth } from "./auth/auth-mongoDB";
+import Head from "next/head";
 
 function HomePage(props) {
-  return <MeetupList meetups={props.meetups} />;
+  return (
+    <>
+      <Head>
+        <title>React Meetups</title>
+        <meta
+          name="description"
+          content="Search for random meetups in this demo react app!!"
+        ></meta>
+      </Head>
+      <MeetupList meetups={props.meetups} />
+    </>
+  );
 }
 
 export async function getStaticProps() {
   const client = await MongoClient.connect(
-    "mongodb+srv://marovichn:<Password>@nikola.wojtt5i.mongodb.net/meetups?retryWrites=true&w=majority"
+    "mongodb+srv://marovichn:" +
+      auth.password +
+      "@nikola.wojtt5i.mongodb.net/meetups?retryWrites=true&w=majority"
   );
   const db = client.db();
   const meetupsCollection = db.collection("meetups");
@@ -26,7 +41,7 @@ export async function getStaticProps() {
         };
       }),
     },
-    revalidate: 10,
+    revalidate: 360,
   };
 }
 export default HomePage;
